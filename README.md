@@ -1,192 +1,145 @@
-# 📈 Bot ETH Trading Quantitatif
+# ETH Trading Bot
 
-Bot de trading automatisé pour **Ethereum (ETH)**, développé en **Node.js**.
+Bot de trading algorithmique pour Ethereum, développé en Node.js.
 
-Le projet repose sur une architecture modulaire permettant :
+Le projet permet d'analyser les données de marché, de tester une stratégie de trading sur des données historiques et, en fonction de la configuration, d'exécuter des swaps sur Ethereum via Uniswap.
 
-* d'analyser les prix en temps réel ;
-* de tester des stratégies quantitatives sur des données historiques ;
-* de simuler les performances via un moteur de backtest ;
-* d'exécuter des transactions sur la blockchain via les smart contracts d'Uniswap ;
-* d'intégrer des mécanismes de gestion du risque et de protection contre le slippage.
+> **Disclaimer**
+>
+> Ce projet est expérimental et fourni à des fins éducatives et de recherche. Les résultats obtenus en backtest ne garantissent pas les performances futures. Le trading de crypto-actifs comporte un risque de perte en capital.
 
-> ⚠️ **Avertissement :** ce projet est expérimental et ne constitue pas un conseil financier. Le trading de cryptomonnaies comporte un risque important de perte en capital. Testez toujours le bot sur un environnement de test (comme Sepolia) avant toute utilisation sur Mainnet.
+## Fonctionnalités
 
----
+### Stratégie de trading
 
-## 🚀 Fonctionnalités
+La stratégie actuelle repose sur plusieurs moyennes mobiles exponentielles :
 
-### 📊 Analyse de tendance
+* **EMA 20** : tendance court terme
+* **EMA 50** : tendance intermédiaire
+* **EMA 200** : filtre de tendance générale
 
-La stratégie utilise plusieurs moyennes mobiles exponentielles (**EMA**) afin d'identifier la tendance du marché :
+Les signaux sont générés à partir du comportement des EMA 20 et 50, avec l'EMA 200 utilisée comme filtre supplémentaire.
 
-* **EMA 20** : tendance court terme ;
-* **EMA 50** : tendance intermédiaire ;
-* **EMA 200** : filtre de tendance macro.
+### Gestion des positions
 
-Les signaux sont notamment basés sur le croisement des **EMA 20 et EMA 50**, avec confirmation par l'**EMA 200** afin de limiter les prises de position contre la tendance générale.
+Le bot intègre un trailing stop afin d'ajuster le niveau de sortie d'une position en fonction de l'évolution du prix.
 
----
+L'objectif est de limiter l'exposition lors d'un retournement de marché tout en permettant à une position profitable de rester ouverte tant que la tendance se poursuit.
 
-### 🛡️ Gestion du risque
+### Vérification du slippage
 
-Le bot intègre un **Trailing Stop dynamique** (*stop-suiveur*).
+Avant l'exécution d'un swap, le bot peut interroger la liquidité disponible afin d'estimer le montant reçu.
 
-Son objectif est de :
+La fonction `getAmountsOut` permet notamment de vérifier que le prix estimé respecte les paramètres définis avant d'envoyer la transaction.
 
-* protéger une partie des gains accumulés ;
-* limiter les pertes lorsque le marché se retourne ;
-* laisser davantage courir une position lorsque la tendance reste favorable.
+### Backtesting
 
----
-
-### ⛓️ Protection Blockchain & Slippage
-
-Avant d'exécuter une transaction, le bot peut simuler le résultat attendu de l'échange grâce à `getAmountsOut`.
-
-Cela permet notamment de vérifier :
-
-* le montant estimé reçu ;
-* la liquidité disponible ;
-* l'impact potentiel du slippage ;
-* si les conditions d'exécution respectent les paramètres définis par la stratégie.
-
-Si les conditions ne sont pas satisfaisantes, la transaction peut être bloquée avant son envoi sur la blockchain.
-
----
-
-### 🧪 Moteur de Backtest
-
-Le projet comprend un moteur de **backtest** permettant de tester la stratégie sur des données historiques.
+Le projet dispose d'un moteur de backtest permettant d'exécuter la stratégie sur des données historiques.
 
 Le backtest prend notamment en compte :
 
-* les signaux d'achat et de vente ;
-* le capital initial ;
-* les performances des positions ;
-* le Trailing Stop ;
+* les signaux d'entrée et de sortie ;
+* le suivi des positions ;
+* le trailing stop ;
 * les frais de trading ;
-* l'évolution du portefeuille au fil du temps.
+* l'évolution du capital.
 
-L'objectif est d'évaluer les performances théoriques de la stratégie avant de l'utiliser en conditions réelles.
+Les résultats sont destinés à comparer différents paramètres de stratégie et à identifier les éventuels problèmes avant un déploiement réel.
 
----
+## Prérequis
 
-## 🛠️ Prérequis
+* Node.js
+* npm
+* Un endpoint RPC Ethereum
+* Un portefeuille Ethereum dédié au bot
+* Des ETH ou tokens nécessaires aux tests
 
-Avant d'installer le projet, assure-toi de disposer de :
+Pour le développement, il est recommandé d'utiliser un réseau de test tel que **Sepolia** avant toute utilisation sur Mainnet.
 
-* **Node.js** installé sur ta machine ;
-* **npm** ;
-* un accès à un **nœud RPC Ethereum**, par exemple via Infura ;
-* un portefeuille compatible Ethereum ;
-* des fonds sur le réseau utilisé.
+## Installation
 
-Pour les premiers tests, il est fortement recommandé d'utiliser **Sepolia** plutôt que le Mainnet.
-
----
-
-## 📦 Installation
-
-Clone le repository :
+Cloner le dépôt :
 
 ```bash
 git clone https://github.com/TonPseudo/bot-eth-trading.git
-```
-
-Place-toi dans le dossier du projet :
-
-```bash
 cd bot-eth-trading
 ```
 
-Installe les dépendances :
+Installer les dépendances :
 
 ```bash
 npm install
 ```
 
----
+## Configuration
 
-## 🔐 Configuration
-
-Crée un fichier `.env` à la racine du projet :
-
-```bash
-touch .env
-```
-
-Ajoute ensuite les variables nécessaires :
+Créer un fichier `.env` à la racine du projet :
 
 ```env
-PRIVATE_KEY=ta_cle_privee
-RPC_URL=https://sepolia.infura.io/v3/TON_API_KEY
+PRIVATE_KEY=your_private_key
+RPC_URL=https://sepolia.infura.io/v3/YOUR_API_KEY
 ```
 
-### ⚠️ Sécurité
+Les variables exactes dépendent de la configuration utilisée par le projet.
 
-**Ne partage jamais ta clé privée.**
+### Sécurité
 
-Le fichier `.env` doit impérativement être exclu de Git.
+La clé privée ne doit jamais être commitée ou partagée.
 
-Vérifie que ton `.gitignore` contient :
+Le fichier `.env` doit être présent dans `.gitignore` :
 
 ```gitignore
 .env
 node_modules/
 ```
 
-> 💡 Pour les tests, utilise de préférence un portefeuille dédié contenant uniquement les fonds nécessaires à l'expérimentation.
+Il est recommandé d'utiliser un portefeuille dédié au bot et de ne jamais y stocker des fonds qui ne sont pas nécessaires aux tests.
 
----
+## Utilisation
 
-## 🕹️ Commandes
+### Backtest
 
-### 🧪 Lancer un backtest
+Lancer le moteur de backtest :
 
 ```bash
 npm run backtest
 ```
 
-Cette commande lance la simulation de la stratégie sur les données historiques disponibles.
+Cette commande exécute la stratégie sur les données historiques disponibles et affiche les résultats de la simulation.
 
-Elle permet notamment d'auditer les performances théoriques de la stratégie en tenant compte des frais.
-
----
-
-### 🤖 Démarrer le bot
+### Démarrer le bot
 
 ```bash
 npm start
 ```
 
-Cette commande démarre le bot en mode direct.
+Le bot démarre alors son processus de surveillance et peut exécuter les transactions configurées.
 
-Le bot surveille alors le marché en temps réel et peut exécuter les transactions conformément aux paramètres configurés.
+Avant de lancer cette commande, vérifier notamment :
 
-> ⚠️ Vérifie impérativement le réseau, le portefeuille et les paramètres de trading avant de lancer le bot en mode réel.
+* le réseau utilisé ;
+* l'adresse du portefeuille ;
+* la clé privée ;
+* les paramètres de stratégie ;
+* le slippage maximum autorisé ;
+* les fonds disponibles.
 
----
-
-### 💰 Vérifier le solde
+### Vérifier le solde
 
 ```bash
 node src/balance.js
 ```
 
-Cette commande permet de vérifier rapidement l'état des fonds du portefeuille directement depuis la blockchain.
+Cette commande permet de consulter rapidement le solde du portefeuille connecté au réseau RPC configuré.
 
----
+## Architecture
 
-## 📁 Structure du projet
-
-Une structure typique peut être organisée comme ceci :
+L'organisation du projet est prévue pour séparer les différentes responsabilités du bot.
 
 ```text
 bot-eth-trading/
 ├── src/
 │   ├── balance.js
-│   ├── ...
 │   └── ...
 ├── .env
 ├── .gitignore
@@ -195,135 +148,103 @@ bot-eth-trading/
 └── README.md
 ```
 
-> La structure exacte peut évoluer en fonction des différents modules ajoutés au projet.
+La structure peut évoluer au fur et à mesure de l'ajout de nouvelles stratégies et fonctionnalités.
 
----
+## Flux d'exécution
 
-## 🔄 Fonctionnement général
-
-Le fonctionnement du bot peut être résumé ainsi :
+Le fonctionnement général est le suivant :
 
 ```text
-              ┌─────────────────────┐
-              │   Données de marché │
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ Analyse des EMA     │
-              │ EMA 20 / 50 / 200   │
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ Génération du signal│
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ Gestion du risque   │
-              │ + Trailing Stop     │
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ Vérification        │
-              │ liquidité / slippage│
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ Exécution Uniswap   │
-              └─────────────────────┘
+Données de marché
+       │
+       ▼
+Calcul des indicateurs
+EMA 20 / EMA 50 / EMA 200
+       │
+       ▼
+Génération du signal
+       │
+       ▼
+Gestion de la position
++ Trailing Stop
+       │
+       ▼
+Vérification du swap
++ Slippage
++ Liquidité
+       │
+       ▼
+Exécution de la transaction
+via Uniswap
 ```
 
----
+## Backtesting
 
-## 🧪 Environnement recommandé
+Le backtesting est utilisé pour évaluer le comportement de la stratégie sur des données historiques avant son utilisation en conditions réelles.
 
-Pour réduire les risques pendant le développement :
+Les performances doivent être interprétées avec prudence. Une simulation historique ne reproduit pas nécessairement les conditions d'exécution rencontrées sur la blockchain.
 
-1. Développer et tester localement.
-2. Effectuer les premiers tests sur **Sepolia**.
-3. Vérifier les résultats du backtest.
-4. Tester les mécanismes de gestion du risque.
-5. Vérifier les paramètres de slippage.
-6. Utiliser un portefeuille dédié avant toute utilisation sur Mainnet.
+Les résultats réels peuvent notamment différer en raison de :
 
----
+* la volatilité ;
+* du slippage ;
+* des frais de gas ;
+* de la liquidité disponible ;
+* du délai entre le signal et l'exécution ;
+* des conditions de marché ;
+* d'éventuelles erreurs techniques.
 
-## ⚠️ Risques et limites
+## Développement
 
-Même une stratégie rentable en backtest peut subir des pertes en conditions réelles.
+Avant toute utilisation sur Mainnet, il est recommandé de tester séparément :
 
-Les résultats peuvent notamment être affectés par :
+1. le calcul des indicateurs ;
+2. la génération des signaux ;
+3. la gestion des positions ;
+4. le trailing stop ;
+5. le calcul du slippage ;
+6. l'exécution des swaps ;
+7. la gestion des erreurs et des transactions échouées.
 
-* la volatilité du marché ;
-* le slippage réel ;
-* les frais de réseau (*gas fees*) ;
-* la liquidité disponible ;
-* les délais d'exécution ;
-* les mouvements rapides du marché ;
-* les erreurs de configuration ;
-* les défaillances techniques ou réseau.
+L'utilisation d'un portefeuille et d'un environnement de test séparés du portefeuille principal est fortement recommandée.
 
-Un backtest représente une simulation historique et **ne garantit pas les performances futures**.
+## Roadmap
 
----
+* [ ] Améliorer le moteur de backtest
+* [ ] Ajouter des tests unitaires
+* [ ] Ajouter plusieurs stratégies
+* [ ] Améliorer la gestion des erreurs
+* [ ] Ajouter un système de logs structuré
+* [ ] Ajouter des notifications
+* [ ] Ajouter un dashboard de suivi
+* [ ] Améliorer la gestion du gas
+* [ ] Ajouter davantage de contrôles avant l'exécution d'une transaction
 
-## 📌 Roadmap
+## Licence
 
-Quelques améliorations possibles :
-
-* [ ] Ajouter davantage d'indicateurs techniques.
-* [ ] Améliorer la gestion du risque.
-* [ ] Ajouter plusieurs stratégies de trading.
-* [ ] Ajouter un système de logs avancé.
-* [ ] Ajouter des alertes Telegram/Discord.
-* [ ] Ajouter un dashboard de suivi.
-* [ ] Améliorer le moteur de backtest.
-* [ ] Ajouter des tests unitaires.
-* [ ] Ajouter une gestion plus avancée du gas.
-* [ ] Ajouter des mécanismes de sécurité supplémentaires avant l'exécution des transactions.
-
----
-
-## 📄 Licence
-
-Ajoute ici la licence de ton choix, par exemple :
+Le projet est actuellement distribué sous :
 
 ```text
 MIT License
 ```
 
----
+Voir le fichier `LICENSE` pour les conditions complètes.
 
-## 🤝 Contribution
+## Contribution
 
-Les contributions, idées et améliorations sont les bienvenues.
+Les contributions sont les bienvenues.
 
-Pour contribuer :
+Pour proposer une modification :
 
 ```bash
-git clone https://github.com/TonPseudo/bot-eth-trading.git
-cd bot-eth-trading
-npm install
+git checkout -b feature/my-feature
 ```
 
-Crée ensuite une branche dédiée à tes modifications, puis ouvre une Pull Request.
+Effectuer les modifications, puis ouvrir une Pull Request avec une description claire du changement.
 
----
+## Avertissement
 
-## ⭐ À propos
+Ce logiciel n'est pas un service de conseil financier et ne constitue pas une recommandation d'investissement.
 
-**Bot ETH Trading Quantitatif** est un projet expérimental destiné à explorer l'automatisation du trading algorithmique sur Ethereum, l'analyse quantitative et l'interaction avec les smart contracts décentralisés.
+L'utilisateur est responsable de la configuration du bot, des clés privées utilisées et des transactions exécutées sur la blockchain.
 
-**Technologies principales :**
-
-* Node.js
-* Ethereum
-* Uniswap
-* Smart Contracts
-* Analyse technique
-* Backtesting
-* Trading algorithmique
